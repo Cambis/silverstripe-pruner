@@ -65,7 +65,7 @@ final class PruneSelectedORMTablesTask extends BuildTask
 
                 try {
                     DB::get_conn()->clearTable($tableName);
-                } catch (Throwable) {
+                } catch (Throwable $exception) {
                     DB::alteration_message('Couldn\'t truncate table ' . $tableName .
                         ' as it doesn\'t exist', 'deleted');
                 }
