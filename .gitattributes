@@ -17,13 +17,13 @@ phpunit.xml.dist export-ignore
 tests export-ignore
 
 # Coding standards
-phpcs.xml.dist
+phpcs.xml.dist export-ignore
 phpstan.neon.dist export-ignore
-stubs
+stubs export-ignore
 
 # Documentation
-CHANGELOG.md
-CONTRIBUTING.md
+CHANGELOG.md export-ignore
+CONTRIBUTING.md export-ignore
 
 # Extra
-package.json
+package.json export-ignore
