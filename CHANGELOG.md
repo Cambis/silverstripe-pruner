@@ -1,5 +1,11 @@
 # silverstripe-pruner
 
+## 0.3.1
+
+### Patch Changes
+
+- 64a5132: Remove unwanted files from build version
+
 ## 0.3.0
 
 ### Minor Changes
