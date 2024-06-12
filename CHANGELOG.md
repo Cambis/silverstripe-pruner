@@ -1,5 +1,11 @@
 # silverstripe-pruner
 
+## 0.2.2
+
+### Patch Changes
+
+- Add missing return statement
+
 ## 0.2.1
 
 ### Patch Changes
