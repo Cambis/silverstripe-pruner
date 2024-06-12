@@ -2,7 +2,6 @@
 
 namespace Cambis\SilverstripePruner\Task;
 
-use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -38,24 +37,20 @@ final class PruneSelectedORMTablesTask extends BuildTask
      */
     private array $clearedTables = [];
 
-    #[Override]
     public function run($request): void
     {
         // Obtain via injector so we can overload isLive() during testing
         $director = Injector::inst()->get(Director::class);
-
         if ($director::isLive() && !((bool) self::config()->get('can_run_in_production'))) {
             echo 'This task cannot be run in a production environment!' . PHP_EOL;
 
             return;
         }
-
         if ($request->getVar('confirm') === null) {
             echo 'Are you sure? Please add ?confirm=1 to the URL to confirm.' . PHP_EOL;
 
             return;
         }
-
         DB::get_conn()->withTransaction(function (): void {
             /** @var array<class-string<DataObject>> $truncatedClasses */
             $truncatedClasses = (array) self::config()->get('truncated_classes');
@@ -71,7 +66,7 @@ final class PruneSelectedORMTablesTask extends BuildTask
 
                 try {
                     DB::get_conn()->clearTable($tableName);
-                } catch (Throwable) {
+                } catch (Throwable $exception) {
                     DB::alteration_message("Couldn't truncate table " . $tableName .
                         " as it doesn't exist", 'deleted');
                 }
