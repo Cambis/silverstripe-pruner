@@ -48,6 +48,8 @@ final class PruneSelectedORMTablesTask extends BuildTask
 
         if (is_null($request->getVar('confirm'))) {
             echo 'Are you sure? Please add ?confirm=1 to the URL to confirm.' . PHP_EOL;
+
+            return;
         }
 
         DB::get_conn()->withTransaction(function (): void {
