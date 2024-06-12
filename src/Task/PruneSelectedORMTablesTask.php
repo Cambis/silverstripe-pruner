@@ -2,12 +2,15 @@
 
 namespace Cambis\SilverstripePruner\Task;
 
+use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use Throwable;
+use function array_key_exists;
+use const PHP_EOL;
 
 /**
  * Prune selected `\SilverStripe\ORM\DataObject` records from the database.
@@ -35,6 +38,7 @@ final class PruneSelectedORMTablesTask extends BuildTask
      */
     private array $clearedTables = [];
 
+    #[Override]
     public function run($request): void
     {
         // Obtain via injector so we can overload isLive() during testing
@@ -46,7 +50,7 @@ final class PruneSelectedORMTablesTask extends BuildTask
             return;
         }
 
-        if (is_null($request->getVar('confirm'))) {
+        if ($request->getVar('confirm') === null) {
             echo 'Are you sure? Please add ?confirm=1 to the URL to confirm.' . PHP_EOL;
 
             return;
@@ -68,8 +72,8 @@ final class PruneSelectedORMTablesTask extends BuildTask
                 try {
                     DB::get_conn()->clearTable($tableName);
                 } catch (Throwable) {
-                    DB::alteration_message('Couldn\'t truncate table ' . $tableName .
-                        ' as it doesn\'t exist', 'deleted');
+                    DB::alteration_message("Couldn't truncate table " . $tableName .
+                        " as it doesn't exist", 'deleted');
                 }
 
                 $this->clearedTables[$className] = true;

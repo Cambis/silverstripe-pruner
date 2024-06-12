@@ -4,6 +4,7 @@ namespace Cambis\SilverstripePruner\Tests\Task;
 
 use Cambis\SilverstripePruner\Task\PruneSelectedORMTablesTask;
 use Cambis\SilverstripePruner\Tests\Task\Source\TestRecord;
+use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
@@ -11,6 +12,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
+use const PHP_EOL;
 
 final class PruneSelectedORMTablesTaskTest extends SapphireTest
 {
@@ -23,6 +25,7 @@ final class PruneSelectedORMTablesTaskTest extends SapphireTest
 
     protected $usesDatabase = true;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -42,7 +45,9 @@ final class PruneSelectedORMTablesTaskTest extends SapphireTest
         $this->assertCount(1, TestRecord::get());
 
         $task = PruneSelectedORMTablesTask::create();
-        $task->run(new HTTPRequest('GET', '/', ['confirm' => 1]));
+        $task->run(new HTTPRequest('GET', '/', [
+            'confirm' => 1,
+        ]));
 
         $this->assertCount(0, TestRecord::get());
     }
