@@ -31,10 +31,15 @@ final class PruneSelectedORMTablesTask extends BuildTask
      */
     private static array $truncated_classes = [];
 
+    /**
+     * @var string[]
+     */
+    private static array $truncated_tables = [];
+
     private static bool $can_run_in_production = false;
 
     /**
-     * @var array<class-string<DataObject>, bool>
+     * @var string[]
      */
     private array $clearedTables = [];
 
@@ -45,13 +50,13 @@ final class PruneSelectedORMTablesTask extends BuildTask
         $director = Injector::inst()->get(Director::class);
 
         if ($director::isLive() && !((bool) self::config()->get('can_run_in_production'))) {
-            echo 'This task cannot be run in a production environment!' . PHP_EOL;
+            echo '🚨 This task cannot be run in a production environment! 🚨' . PHP_EOL;
 
             return;
         }
 
         if ($request->getVar('confirm') === null) {
-            echo 'Are you sure? Please add ?confirm=1 to the URL to confirm.' . PHP_EOL;
+            echo '⚠️ Are you sure? Please add ?confirm=1 to the URL to confirm. ⚠️' . PHP_EOL;
 
             return;
         }
@@ -60,24 +65,37 @@ final class PruneSelectedORMTablesTask extends BuildTask
             /** @var array<class-string<DataObject>> $truncatedClasses */
             $truncatedClasses = (array) self::config()->get('truncated_classes');
 
+            /** @var string[] $truncatedTables */
+            $truncatedTables = (array) self::config()->get('truncated_tables');
+
             foreach ($truncatedClasses as $className) {
-                if (array_key_exists($className, $this->clearedTables)) {
-                    continue;
-                }
-
                 $tableName = DataObject::getSchema()->tableName($className);
+                $this->truncateTable($tableName);
+            }
 
-                DB::alteration_message('Truncating table ' . $tableName, 'deleted');
-
-                try {
-                    DB::get_conn()->clearTable($tableName);
-                } catch (Throwable) {
-                    DB::alteration_message("Couldn't truncate table " . $tableName .
-                        " as it doesn't exist", 'deleted');
-                }
-
-                $this->clearedTables[$className] = true;
+            foreach ($truncatedTables as $tableName) {
+                $this->truncateTable($tableName);
             }
         });
+    }
+
+    private function truncateTable(string $tableName): void
+    {
+        if (array_key_exists($tableName, $this->clearedTables)) {
+            DB::alteration_message($tableName . ' already truncated, skipping.', 'deleted');
+
+            return;
+        }
+
+        DB::alteration_message('Truncating table ' . $tableName . '.', 'deleted');
+
+        try {
+            DB::get_conn()->clearTable($tableName);
+        } catch (Throwable) {
+            DB::alteration_message("Couldn't truncate table " . $tableName .
+                " as it doesn't exist.", 'deleted');
+        }
+
+        $this->clearedTables[] = $tableName;
     }
 }
