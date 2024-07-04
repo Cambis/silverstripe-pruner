@@ -31,7 +31,6 @@ Cambis\SilverstripePruner\Task\PruneSelectedORMTablesTask:
     - My\Record\To\Truncate
   # Any extra tables such as those from silverstripe/versioned etc.
   truncated_tables:
-    - Truncate_Stage
     - Truncate_Live
     - Truncate_Versions
   # Defaults to false, add this line if you want to run the task in a production environment
