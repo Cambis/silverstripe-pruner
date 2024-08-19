@@ -1,5 +1,11 @@
 # silverstripe-pruner
 
+## 0.4.0
+
+### Minor Changes
+
+- Allow the ability to truncate specified tables
+
 ## 0.3.1
 
 ### Patch Changes
