@@ -1,6 +1,6 @@
 <?php
 
-namespace Cambis\SilverstripePruner\Tests\Task\Source;
+namespace Cambis\SilverstripePruner\Tests\Task\Source\Model;
 
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
