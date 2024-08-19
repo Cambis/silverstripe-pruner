@@ -1,5 +1,11 @@
 # silverstripe-pruner
 
+## 0.5.0
+
+### Minor Changes
+
+- Add extension hooks
+
 ## 0.4.0
 
 ### Minor Changes
