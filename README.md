@@ -37,6 +37,39 @@ Cambis\SilverstripePruner\Task\PruneSelectedORMTablesTask:
   can_run_in_production: true
 ```
 
+You can also dynamically update the truncated tables using an extension hook. This library provides traits to with the hook method definitions.
+
+```php
+<?php
+
+namespace App\Extension;
+
+use Cambis\SilverstripePruner\Concern\UpdateTruncatedClasses;
+use Cambis\SilverstripePruner\Concern\UpdateTruncatedTables;
+use Cambis\SilverstripePruner\Task\PruneSelectedORMTablesTask;
+use SilverStripe\Core\Extension;
+
+/**
+ * @extends Extension<PruneSelectedORMTablesTask>
+ */
+final class MyPrunerExtension extends Extension
+{
+    use UpdateTruncatedClasses;
+    use UpdateTruncatedTables;
+
+    protected function updateTruncatedClasses(array &$truncatedClasses): void
+    {
+        $truncatedClasses[] = \My\Record\To\Truncate::class;
+    }
+
+    protected function updateTruncatedTables(array &$truncatedTables): void
+    {
+        $truncatedTables[] = 'Truncate_Live';
+        $truncatedTables[] = 'Truncate_Versions';
+    }
+}
+```
+
 ## Usage 🏃🏃🏃
 
 ```sh

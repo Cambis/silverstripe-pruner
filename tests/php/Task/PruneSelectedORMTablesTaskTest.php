@@ -3,8 +3,11 @@
 namespace Cambis\SilverstripePruner\Tests\Task;
 
 use Cambis\SilverstripePruner\Task\PruneSelectedORMTablesTask;
-use Cambis\SilverstripePruner\Tests\Task\Source\TestRecord;
+use Cambis\SilverstripePruner\Task\Source\Extension\TruncatedClassesExtension;
+use Cambis\SilverstripePruner\Task\Source\Extension\TruncatedTablesExtension;
+use Cambis\SilverstripePruner\Tests\Task\Source\Model\TestRecord;
 use Override;
+use SilverStripe\Config\Collections\MutableConfigCollectionInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
@@ -31,18 +34,6 @@ final class PruneSelectedORMTablesTaskTest extends SapphireTest
     {
         parent::setUp();
 
-        Config::modify()->set(
-            PruneSelectedORMTablesTask::class,
-            'truncated_classes',
-            [TestRecord::class]
-        );
-
-        Config::modify()->set(
-            PruneSelectedORMTablesTask::class,
-            'truncated_tables',
-            ['TestRecord_Foo']
-        );
-
         DB::query('DROP TABLE IF EXISTS TestRecord_Foo;');
         DB::query('CREATE TABLE TestRecord_Foo (Bar varchar(255) not null);');
     }
@@ -54,10 +45,41 @@ final class PruneSelectedORMTablesTaskTest extends SapphireTest
 
         $this->assertCount(1, TestRecord::get());
 
-        $task = PruneSelectedORMTablesTask::create();
-        $task->run(new HTTPRequest('GET', '/', [
-            'confirm' => 1,
-        ]));
+        Config::withConfig(static function (MutableConfigCollectionInterface $config): void {
+            $config->set(
+                PruneSelectedORMTablesTask::class,
+                'truncated_classes',
+                [TestRecord::class]
+            );
+
+            $task = PruneSelectedORMTablesTask::create();
+            $task->run(new HTTPRequest('GET', '/', [
+                'confirm' => 1,
+            ]));
+        });
+
+        $this->assertCount(0, TestRecord::get());
+    }
+
+    public function testTruncateClassExtension(): void
+    {
+        $record = TestRecord::create();
+        $record->write();
+
+        $this->assertCount(1, TestRecord::get());
+
+        Config::withConfig(static function (MutableConfigCollectionInterface $config): void {
+            $config->set(
+                PruneSelectedORMTablesTask::class,
+                'extensions',
+                [TruncatedClassesExtension::class]
+            );
+
+            $task = PruneSelectedORMTablesTask::create();
+            $task->run(new HTTPRequest('GET', '/', [
+                'confirm' => 1,
+            ]));
+        });
 
         $this->assertCount(0, TestRecord::get());
     }
@@ -68,10 +90,40 @@ final class PruneSelectedORMTablesTaskTest extends SapphireTest
 
         $this->assertSame(1, (int) DB::query('SELECT COUNT(*) FROM TestRecord_Foo;')->value());
 
-        $task = PruneSelectedORMTablesTask::create();
-        $task->run(new HTTPRequest('GET', '/', [
-            'confirm' => 1,
-        ]));
+        Config::withConfig(static function (MutableConfigCollectionInterface $config): void {
+            $config->set(
+                PruneSelectedORMTablesTask::class,
+                'truncated_tables',
+                ['TestRecord_Foo']
+            );
+
+            $task = PruneSelectedORMTablesTask::create();
+            $task->run(new HTTPRequest('GET', '/', [
+                'confirm' => 1,
+            ]));
+        });
+
+        $this->assertSame(0, (int) DB::query('SELECT COUNT(*) FROM TestRecord_Foo;')->value());
+    }
+
+    public function testTruncateTableExtension(): void
+    {
+        DB::query('INSERT INTO "TestRecord_Foo" ("Bar") VALUES (\'Baz\');');
+
+        $this->assertSame(1, (int) DB::query('SELECT COUNT(*) FROM TestRecord_Foo;')->value());
+
+        Config::withConfig(static function (MutableConfigCollectionInterface $config): void {
+            $config->set(
+                PruneSelectedORMTablesTask::class,
+                'extensions',
+                [TruncatedTablesExtension::class]
+            );
+
+            $task = PruneSelectedORMTablesTask::create();
+            $task->run(new HTTPRequest('GET', '/', [
+                'confirm' => 1,
+            ]));
+        });
 
         $this->assertSame(0, (int) DB::query('SELECT COUNT(*) FROM TestRecord_Foo;')->value());
     }

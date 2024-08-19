@@ -68,6 +68,10 @@ final class PruneSelectedORMTablesTask extends BuildTask
             /** @var string[] $truncatedTables */
             $truncatedTables = (array) self::config()->get('truncated_tables');
 
+            // Add extension hooks to dynamically update the truncated classes and tables
+            $this->extend('updateTruncatedClasses', $truncatedClasses);
+            $this->extend('updateTruncatedTables', $truncatedTables);
+
             foreach ($truncatedClasses as $className) {
                 $tableName = DataObject::getSchema()->tableName($className);
                 $this->truncateTable($tableName);
